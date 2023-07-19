@@ -12,10 +12,7 @@ impl Collector {
     }
 
     pub async fn gather(&self, state: SharedState, purls: Vec<String>) -> Vec<String> {
-        let client = reqwest::Client::new()
-            .post(&self.config.url)
-            .json(&purls)
-            .send();
+        let client = reqwest::Client::new().post(&self.config.url).json(&purls).send();
 
         if let Ok(response) = client.await {
             if let Ok(retained) = response.json().await {

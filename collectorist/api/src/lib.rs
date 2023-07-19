@@ -37,9 +37,9 @@ impl Run {
                 let server = server::run(state.clone(), addr);
                 let listener = state.gatherer.listen(state.clone());
                 tokio::select! {
-                    _ = listener => { }
-                    _ = server => { }
-               }
+                     _ = listener => { }
+                     _ = server => { }
+                }
                 Ok(())
             })
             .await?;

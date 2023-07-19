@@ -224,8 +224,8 @@ mod test {
         let purls: Vec<_> = result.collect().await;
 
         assert_eq!(2, purls.len());
-        assert!( purls.contains(&"bob".to_owned()) );
-        assert!( purls.contains(&"not-scanned".to_owned()) );
+        assert!(purls.contains(&"bob".to_owned()));
+        assert!(purls.contains(&"not-scanned".to_owned()));
 
         Ok(())
     }

@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
-pub mod collectors;
 pub mod collector;
+pub mod collectors;
 
 #[derive(Serialize, Deserialize)]
 pub enum RateLimit {
@@ -79,4 +79,3 @@ impl Gatherer {
         state.db.insert_purl(purl).await
     }
 }
-

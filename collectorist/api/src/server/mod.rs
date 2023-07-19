@@ -12,8 +12,8 @@ use crate::server::collector::register_collector;
 use crate::server::collector::{collector_config, deregister_collector};
 use crate::SharedState;
 
-pub(crate) mod collector;
 pub(crate) mod collect;
+pub(crate) mod collector;
 
 #[derive(OpenApi)]
 #[openapi(paths(
