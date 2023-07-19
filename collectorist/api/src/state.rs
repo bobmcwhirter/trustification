@@ -1,43 +1,25 @@
-use crate::collector::CollectorConfig;
 use std::collections::HashMap;
+
 use tokio::sync::RwLock;
+use crate::db::Db;
 
-#[derive(Default)]
+use crate::gatherer::collectors::Collectors;
+use crate::gatherer::gatherer::Gatherer;
+
 pub struct AppState {
-    pub(crate) collectors: RwLock<CollectorsState>,
+    pub(crate) collectors: RwLock<Collectors>,
+    pub(crate) gatherer: Gatherer,
+    pub(crate) db: Db,
 }
 
-#[derive(Default)]
-pub struct CollectorsState {
-    collectors: HashMap<String, CollectorState>,
-}
+impl AppState {
 
-impl CollectorsState {
-    pub fn register(&mut self, id: String, config: CollectorConfig) -> Result<(), ()> {
-        self.collectors.insert(id, CollectorState::new(config));
-        Ok(())
+    pub async fn new(csub_url: String) -> Result<Self, anyhow::Error> {
+        Ok(Self {
+            collectors: Default::default(),
+            db: Db::new().await?,
+            gatherer: Gatherer::new(csub_url)
+        })
     }
 
-    pub fn deregister(&mut self, id: String) -> Result<bool, ()> {
-        Ok(self.collectors.remove(&id).is_some())
-    }
-
-    #[allow(unused)]
-    pub fn collector_ids(&self) -> impl Iterator<Item = &String> {
-        self.collectors.keys()
-    }
-
-    pub fn collector_config(&self, id: String) -> Option<CollectorConfig> {
-        self.collectors.get(&id).map(|e| e.config.clone())
-    }
-}
-
-pub struct CollectorState {
-    config: CollectorConfig,
-}
-
-impl CollectorState {
-    pub fn new(config: CollectorConfig) -> Self {
-        Self { config }
-    }
 }
