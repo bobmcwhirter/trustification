@@ -2,12 +2,6 @@ use std::net::SocketAddr;
 use std::process::ExitCode;
 use std::str::FromStr;
 use std::sync::Arc;
-use std::time::SystemTime;
-
-use futures::future::join;
-use guac::collectsub::{CollectSubClient, Entry, Filter};
-use tokio::select;
-use tokio::time::interval;
 
 use trustification_infrastructure::{Infrastructure, InfrastructureConfig};
 
@@ -36,7 +30,7 @@ pub struct Run {
 
 impl Run {
     pub async fn run(self) -> anyhow::Result<ExitCode> {
-        let infra = Infrastructure::from(self.infra)
+        Infrastructure::from(self.infra)
             .run("collectorist-api", |_metrics| async move {
                 let state = Self::configure(self.csub_url).await?;
                 let addr = SocketAddr::from_str(&format!("{}:{}", self.bind, self.port))?;

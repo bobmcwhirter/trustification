@@ -1,8 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
 use futures::future::join_all;
-use futures::StreamExt;
-use tokio::join;
 use crate::gatherer::collector::Collector;
 
 use crate::server::collect::CollectRequest;
@@ -36,7 +34,7 @@ impl Collectors {
     pub async fn gather(&self, state: SharedState, request: CollectRequest) -> HashSet<String>{
         let mut futures = Vec::new();
 
-        for (name, collector) in &self.collectors {
+        for collector in self.collectors.values() {
             futures.push(collector.gather(state.clone(), request.purls.clone()));
         }
 

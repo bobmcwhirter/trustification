@@ -1,10 +1,9 @@
 use std::str::FromStr;
 
-use chrono::{DateTime, TimeZone, Utc};
+use chrono::{DateTime, Utc};
 use futures::{Stream, StreamExt};
-use log::LevelFilter;
 use sqlx::sqlite::SqliteConnectOptions;
-use sqlx::{ConnectOptions, Row, SqlitePool};
+use sqlx::{Row, SqlitePool};
 
 static DB_FILE_NAME: &str = "gatherer.db";
 
@@ -176,7 +175,7 @@ impl Db {
 mod test {
     use std::thread::sleep;
 
-    use chrono::{DateTime, Duration, Utc};
+    use chrono::{Duration, Utc};
     use futures::StreamExt;
 
     use crate::db::Db;
@@ -194,7 +193,7 @@ mod test {
         db.insert_purl("jim".into()).await?;
         db.insert_purl("jim".into()).await?;
 
-        let mut result = Box::pin(db.get_purls().await);
+        let result = Box::pin(db.get_purls().await);
         let purls: Vec<_> = result.collect().await;
 
         assert_eq!(3, purls.len());
@@ -221,7 +220,7 @@ mod test {
         assert!(time_1 < time_2);
 
         sleep(Duration::seconds(2).to_std()?);
-        let mut result = Box::pin(db.get_purls_to_scan("test-scanner".into(), Utc::now(), 10).await);
+        let result = Box::pin(db.get_purls_to_scan("test-scanner".into(), Utc::now(), 10).await);
         let purls: Vec<_> = result.collect().await;
 
         assert_eq!(2, purls.len());

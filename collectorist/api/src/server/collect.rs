@@ -1,4 +1,4 @@
-use actix_web::{delete, get, post, web, HttpResponse, Responder};
+use actix_web::{post, web, HttpResponse, Responder};
 use serde::{Deserialize, Serialize};
 
 use crate::SharedState;

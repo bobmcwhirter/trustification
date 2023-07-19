@@ -1,4 +1,3 @@
-use futures::StreamExt;
 use crate::server::collector::CollectorConfig;
 use crate::SharedState;
 

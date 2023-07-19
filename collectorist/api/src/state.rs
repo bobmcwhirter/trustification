@@ -1,10 +1,8 @@
-use std::collections::HashMap;
-
 use tokio::sync::RwLock;
 use crate::db::Db;
 
 use crate::gatherer::collectors::Collectors;
-use crate::gatherer::gatherer::Gatherer;
+use crate::gatherer::Gatherer;
 
 pub struct AppState {
     pub(crate) collectors: RwLock<Collectors>,
