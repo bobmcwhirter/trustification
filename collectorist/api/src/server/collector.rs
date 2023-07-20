@@ -1,20 +1,8 @@
-use std::time::Duration;
-
 use actix_web::{delete, get, post, web, HttpResponse, Responder};
-use serde::{Deserialize, Serialize};
+use collectorist_client::CollectorConfig;
+use log::info;
 
 use crate::SharedState;
-
-#[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct CollectorConfig {
-    pub(crate) url: String,
-    #[serde(with = "humantime_serde", default = "default_cadence")]
-    pub(crate) cadence: Duration,
-}
-
-pub fn default_cadence() -> Duration {
-    Duration::from_secs(30 * 60)
-}
 
 /// Register a collector
 #[utoipa::path(
@@ -32,11 +20,15 @@ pub(crate) async fn register_collector(
     id: web::Path<String>,
     config: web::Json<CollectorConfig>,
 ) -> actix_web::Result<impl Responder> {
+    info!("registered collector {} at {}", id, config.url.clone());
+    info!("--> {:?}", config);
     if state
+        .clone()
         .collectors
         .write()
         .await
-        .register((*id).clone(), (*config).clone())
+        .register(state.get_ref().clone(), (*id).clone(), (*config).clone())
+        .await
         .is_ok()
     {
         Ok(HttpResponse::Ok().finish())

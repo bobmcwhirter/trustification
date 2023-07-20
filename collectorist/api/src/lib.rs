@@ -9,7 +9,7 @@ use crate::state::AppState;
 
 mod db;
 mod gatherer;
-mod server;
+pub mod server;
 mod state;
 
 #[derive(clap::Args, Debug)]

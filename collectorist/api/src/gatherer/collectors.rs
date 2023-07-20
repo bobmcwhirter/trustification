@@ -1,10 +1,10 @@
 use std::collections::{HashMap, HashSet};
 
 use crate::gatherer::collector::Collector;
+use collectorist_client::CollectorConfig;
 use futures::future::join_all;
 
 use crate::server::collect::CollectRequest;
-use crate::server::collector::CollectorConfig;
 use crate::SharedState;
 
 #[derive(Default)]
@@ -13,8 +13,9 @@ pub struct Collectors {
 }
 
 impl Collectors {
-    pub fn register(&mut self, id: String, config: CollectorConfig) -> Result<(), ()> {
-        self.collectors.insert(id.clone(), Collector::new(id, config));
+    pub async fn register(&mut self, state: SharedState, id: String, config: CollectorConfig) -> Result<(), ()> {
+        self.collectors
+            .insert(id.clone(), Collector::new(state.clone(), id, config));
         Ok(())
     }
 
