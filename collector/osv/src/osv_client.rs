@@ -3,7 +3,9 @@ use futures::join;
 use osv::schema::Vulnerability;
 use serde::{Deserialize, Serialize};
 
-use collector_client::GatherRequest;
+use collector_client::{GatherRequest, GatherResponse};
+
+//schemafy::schemafy!("schema.json");
 
 const QUERY_URL: &str = "https://api.osv.dev/v1/query";
 
@@ -27,50 +29,68 @@ enum QueryResponse {
 }
 
 impl OsvClient {
-    pub async fn query(request: &GatherRequest) -> Result<(), anyhow::Error> {
+    pub async fn query(request: &GatherRequest) -> Result<GatherResponse, anyhow::Error> {
         let requests: Vec<_> = request
             .purls
             .iter()
             .map(|purl| {
+                let json_body = serde_json::to_string(&QueryPackageRequest {
+                    package: Package { purl: purl.clone() },
+                })
+                .ok()
+                .unwrap_or("".to_string());
 
-                let json_body = serde_json::to_string(
-                    &QueryPackageRequest {
-                        package: Package {
-                            purl: purl.clone(),
-                        },
-                    }
-                ).ok().unwrap_or( "".to_string());
-
-                println!("---------> {}", json_body);
-
-                reqwest::Client::new()
-                    .post(QUERY_URL)
-                    .json(&QueryPackageRequest {
-                        package: Package { purl: purl.clone() },
-                    })
-                    .send()
+                async move {
+                    (
+                        purl.clone(),
+                        reqwest::Client::new()
+                            .post(QUERY_URL)
+                            .json(&QueryPackageRequest {
+                                package: Package { purl: purl.clone() },
+                            })
+                            .send()
+                            .await,
+                    )
+                }
             })
             .collect();
 
-        println!("A");
-
         let responses = join_all(requests).await;
-        println!("B");
 
-        for response in responses {
-            println!("C");
+        let mut purls = Vec::new();
+        for (purl, response) in responses {
             if let Ok(response) = response {
-                println!("D");
                 let response: Result<QueryResponse, _> = response.json().await;
-                println!("E");
-                println!("-- {:?}", response);
+                if let Ok(response) = response {
+                    println!("{:?}", response);
+                }
+                purls.push(purl);
             } else {
                 println!("bogus");
             }
         }
 
-        Ok(())
+        Ok(GatherResponse {
+            purls,
+        })
 
         //println!("{:?}", results);
     }
+}
+
+#[cfg(test)]
+mod test {
+    use std::str::from_utf8;
+    use collector_client::GatherRequest;
+    use crate::osv_client::OsvClient;
+
+    #[actix_web::test]
+    async fn test_ingest() -> Result<(), anyhow::Error> {
+        let vulns = from_utf8(include_bytes!("log4j-vuln-osv.json"))?;
+        println!("{:?}", vulns);
+
+        Ok(())
+
+    }
+
 }

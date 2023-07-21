@@ -54,9 +54,13 @@ pub fn config(cfg: &mut web::ServiceConfig) {
 pub async fn gather(state: web::Data<SharedState>, request: web::Json<GatherRequest>) -> impl Responder {
     info!("{:?}", request);
 
-    OsvClient::query(&*request).await;
+    if let Ok(response) = OsvClient::query(&*request).await {
+        HttpResponse::Ok()
+            .json(response)
+    } else {
+        HttpResponse::InternalServerError().finish()
+    }
 
-    HttpResponse::Ok().finish()
 }
 
 pub async fn register_with_collectorist(state: SharedState) {
@@ -74,6 +78,7 @@ pub async fn register_with_collectorist(state: SharedState) {
                     .await
                     .is_ok()
                 {
+                    state.connected.store(true, Ordering::Relaxed);
                     info!("successfully registered with collectorist")
                 } else {
                     warn!("failed to register with collectorist")
